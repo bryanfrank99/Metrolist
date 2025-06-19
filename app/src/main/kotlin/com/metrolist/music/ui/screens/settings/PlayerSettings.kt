@@ -53,7 +53,7 @@ import com.metrolist.music.constants.SimilarContent
 import com.metrolist.music.constants.SkipSilenceKey
 import com.metrolist.music.constants.StopMusicOnTaskClearKey
 import com.metrolist.music.constants.HistoryDuration
-import com.metrolist.music.ui.component.CounterDialog
+import com.metrolist.music.ui.component.ActionPromptDialog
 import com.metrolist.music.ui.component.EnumListPreference
 import com.metrolist.music.ui.component.IconButton
 import com.metrolist.music.ui.component.PreferenceEntry
@@ -84,26 +84,47 @@ fun PlayerSettings(
     val (stopMusicOnTaskClear, onStopMusicOnTaskClearChange) = rememberPreference(StopMusicOnTaskClearKey, defaultValue = false)
     val (historyDuration, onHistoryDurationChange) = rememberPreference(HistoryDuration, defaultValue = 30f)
 
-    var showCrossFadeDur by remember {
-        mutableStateOf(false)
-    }
+    var showCrossFadeDur by remember { mutableStateOf(false) }
+    var crossfadeSliderValue by remember { mutableFloatStateOf(crossfadeDuration.toFloat()) }
 
     if (showCrossFadeDur) {
-        CounterDialog(
-            title = stringResource(R.string.crossfade),
-            initialValue = crossfadeDuration,
-            upperBound = 12000,
-            lowerBound = 0,
-            resetValue = 3000,
+        ActionPromptDialog(
+            titleBar = {
+                Text(
+                    text = stringResource(R.string.crossfade),
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+            },
             onDismiss = { showCrossFadeDur = false },
             onConfirm = {
                 showCrossFadeDur = false
-                onCrossfadeDurationChange(it)
+                onCrossfadeDurationChange(crossfadeSliderValue.roundToInt())
             },
-            onCancel = {
-                showCrossFadeDur = false
+            onCancel = { showCrossFadeDur = false },
+            onReset = {
+                crossfadeSliderValue = 3000f
+                onCrossfadeDurationChange(3000)
             },
-            onReset = { onCrossfadeDurationChange(3000) },
+            content = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = stringResource(R.string.crossfade_duration_ms, crossfadeSliderValue.roundToInt()),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Slider(
+                        value = crossfadeSliderValue,
+                        onValueChange = { crossfadeSliderValue = it },
+                        valueRange = 0f..12000f,
+                        steps = 23,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
         )
     }
 
@@ -168,9 +189,7 @@ fun PlayerSettings(
             )
         }
 
-        PreferenceGroupTitle(
-            title = stringResource(R.string.queue)
-        )
+        PreferenceGroupTitle(title = stringResource(R.string.queue))
 
         SwitchPreference(
             title = { Text(stringResource(R.string.persistent_queue)) },
@@ -212,9 +231,7 @@ fun PlayerSettings(
             onCheckedChange = onAutoSkipNextOnErrorChange
         )
 
-        PreferenceGroupTitle(
-            title = stringResource(R.string.misc)
-        )
+        PreferenceGroupTitle(title = stringResource(R.string.misc))
 
         SwitchPreference(
             title = { Text(stringResource(R.string.stop_music_on_task_clear)) },
@@ -231,10 +248,7 @@ fun PlayerSettings(
                 onClick = navController::navigateUp,
                 onLongClick = navController::backToMain
             ) {
-                Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null
-                )
+                Icon(painterResource(R.drawable.arrow_back), contentDescription = null)
             }
         }
     )
