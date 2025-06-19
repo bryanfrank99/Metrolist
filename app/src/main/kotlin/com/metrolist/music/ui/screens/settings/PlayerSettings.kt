@@ -51,8 +51,10 @@ import com.metrolist.music.constants.SimilarContent
 import com.metrolist.music.constants.SkipSilenceKey
 import com.metrolist.music.constants.StopMusicOnTaskClearKey
 import com.metrolist.music.constants.HistoryDuration
+import com.metrolist.music.ui.component.ActionPromptDialog
 import com.metrolist.music.ui.component.EnumListPreference
 import com.metrolist.music.ui.component.IconButton
+import com.metrolist.music.ui.component.PreferenceEntry
 import com.metrolist.music.ui.component.PreferenceGroupTitle
 import com.metrolist.music.ui.component.SliderPreference
 import com.metrolist.music.ui.component.SwitchPreference
@@ -116,12 +118,12 @@ fun PlayerSettings(
         defaultValue = 30f
     )
 
-    var showCrossFadeDur by remember {Add commentMore actions
+    var showCrossFadeDur by remember {
         mutableStateOf(false)
     }
 
     if (showCrossFadeDur) {
-        CounterDialog(
+        ActionPromptDialog(
             title = stringResource(R.string.crossfade),
             initialValue = crossfadeDuration,
             upperBound = 12000,
