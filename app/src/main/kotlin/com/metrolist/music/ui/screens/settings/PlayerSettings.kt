@@ -84,10 +84,7 @@ fun PlayerSettings(
     val (stopMusicOnTaskClear, onStopMusicOnTaskClearChange) = rememberPreference(StopMusicOnTaskClearKey, defaultValue = false)
     val (historyDuration, onHistoryDurationChange) = rememberPreference(HistoryDuration, defaultValue = 30f)
 
-    var showCrossFadeDur by remember { mutableStateOf(false) }
-    var crossfadeSliderValue by remember { mutableFloatStateOf(crossfadeDuration.toFloat()) }
-
-    var showCrossFadeDur by remember {Add commentMore actions
+    var showCrossFadeDur by remember {
         mutableStateOf(false)
     }
 
