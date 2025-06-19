@@ -62,6 +62,8 @@ import com.metrolist.music.constants.AudioQualityKey
 import com.metrolist.music.constants.AutoLoadMoreKey
 import com.metrolist.music.constants.AutoDownloadOnLikeKey
 import com.metrolist.music.constants.AutoSkipNextOnErrorKey
+import com.metrolist.music.constants.CrossfadeDurationKey
+import com.metrolist.music.constants.CrossfadeEnabledKey
 import com.metrolist.music.constants.DiscordTokenKey
 import com.metrolist.music.constants.EnableDiscordRPCKey
 import com.metrolist.music.constants.HideExplicitKey
@@ -204,6 +206,10 @@ class MusicService :
     private var isAudioEffectSessionOpened = false
 
     private var discordRpc: DiscordRPC? = null
+
+    private val crossfadeEnabled = MutableStateFlow(false)
+    private val crossfadeDuration = MutableStateFlow(3000L)
+    private var crossfadeJob: Job? = null
 
     val automixItems = MutableStateFlow<List<MediaItem>>(emptyList())
 
@@ -388,6 +394,17 @@ class MusicService :
                     saveQueueToDisk()
                 }
             }
+        }
+
+        scope.launch {
+            combine(
+                dataStore.data.map { it[CrossfadeEnabledKey] ?: false },
+                dataStore.data.map { it[CrossfadeDurationKey]?.toLong() ?: 3000L }
+            ) { enabled, duration -> Pair(enabled, duration) }
+                .collect { (enabled, duration) ->
+                    crossfadeEnabled.value = enabled
+                    crossfadeDuration.value = duration
+                }
         }
     }
 
@@ -697,6 +714,33 @@ class MusicService :
                 }
             }
         }
+
+        if (dataStore.get(CrossfadeEnabledKey,true) && reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO &&
+            crossfadeEnabled.value &&
+            player.playbackState == Player.STATE_READY) {
+            startCrossfade()
+        }
+    }
+
+    private fun startCrossfade() {
+        crossfadeJob?.cancel()
+        crossfadeJob = scope.launch {
+            val duration = crossfadeDuration.value
+            val steps = 20
+            val stepDuration = duration / steps
+            for (i in 0..steps) {
+                val volume = 1f - (i.toFloat() / steps)
+                player.volume = volume
+                delay(stepDuration)
+            }
+            player.seekToNext()
+            player.volume = 0f
+            for (i in 0..steps) {
+                val volume = i.toFloat() / steps
+                player.volume = volume
+                delay(stepDuration)
+            }
+        }
     }
 
     override fun onPlaybackStateChanged(
@@ -969,6 +1013,7 @@ class MusicService :
         player.removeListener(this)
         player.removeListener(sleepTimer)
         player.release()
+        crossfadeJob?.cancel()
         super.onDestroy()
     }
 
