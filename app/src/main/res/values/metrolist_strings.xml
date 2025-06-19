@@ -130,6 +130,7 @@
     <string name="minimum_playback_duration">Minimum playback duration</string>
     <string name="crossfade">Crossfade</string>
     <string name="crossfade_desc">Smooth transition between songs</string>
+    <string name="crossfade_duration_ms">Crossfade: %1$d ms</string>
 
     <string name="import_online">Import a \"m3u\" playlists</string>
     <string name="import_csv">Import a \"csv\" playlists</string>
