@@ -714,33 +714,53 @@ class MusicService :
                 }
             }
         }
-
-        if (dataStore.get(CrossfadeEnabledKey,true) && reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO &&
-            crossfadeEnabled.value &&
-            player.playbackState == Player.STATE_READY) {
-            startCrossfade()
-        }
     }
 
     private fun startCrossfade() {
         crossfadeJob?.cancel()
-        crossfadeJob = scope.launch {
-            val duration = crossfadeDuration.value
-            val steps = 20
-            val stepDuration = duration / steps
-            for (i in 0..steps) {
-                val volume = 1f - (i.toFloat() / steps)
-                player.volume = volume
-                delay(stepDuration)
-            }
-            player.seekToNext()
-            player.volume = 0f
-            for (i in 0..steps) {
-                val volume = i.toFloat() / steps
-                player.volume = volume
-                delay(stepDuration)
-            }
+    crossfadeJob = scope.launch {
+        val duration = crossfadeDuration.value
+        val steps = 20
+        val stepDuration = duration / steps
+
+        // Fade out current song
+        for (i in 0..steps) {
+            player.volume = 1f - (i.toFloat() / steps)
+            delay(stepDuration)
         }
+
+        player.seekToNext()
+
+        // Fade in next song
+        player.volume = 0f
+        for (i in 0..steps) {
+            player.volume = i.toFloat() / steps
+            delay(stepDuration)
+        }
+    }
+}
+
+    private fun setupCrossfadeWatcher() {
+    scope.launch {
+        while (isActive) {
+            if (!crossfadeEnabled.value || player.playbackState != Player.STATE_READY) {
+                delay(500)
+                continue
+            }
+
+            val duration = player.duration
+            val position = player.currentPosition
+            val remaining = duration - position
+            val fadeDuration = crossfadeDuration.value
+
+            if (duration > 0 && remaining in (fadeDuration - 300)..(fadeDuration + 300)) {
+                startCrossfade()
+                delay(fadeDuration)
+            }
+
+            delay(200)
+        }
+    }
     }
 
     override fun onPlaybackStateChanged(
