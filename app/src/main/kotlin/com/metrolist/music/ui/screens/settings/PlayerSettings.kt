@@ -1,5 +1,6 @@
 package com.metrolist.music.ui.screens.settings
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,6 +44,8 @@ import com.metrolist.music.constants.AudioQualityKey
 import com.metrolist.music.constants.AutoDownloadOnLikeKey
 import com.metrolist.music.constants.AutoLoadMoreKey
 import com.metrolist.music.constants.AutoSkipNextOnErrorKey
+import com.metrolist.music.constants.CrossfadeDurationKey
+import com.metrolist.music.constants.CrossfadeEnabledKey
 import com.metrolist.music.constants.PersistentQueueKey
 import com.metrolist.music.constants.SimilarContent
 import com.metrolist.music.constants.SkipSilenceKey
@@ -96,6 +99,14 @@ fun PlayerSettings(
         AutoSkipNextOnErrorKey,
         defaultValue = false
     )
+    val (crossfadeEnabled,onCrossfadeEnabledChange) = rememberPreference(
+        CrossfadeEnabledKey,
+        defaultValue = true
+    )
+    val (crossfadeDuration,onCrossfadeDurationChange) = rememberPreference(
+        CrossfadeDurationKey,
+        defaultValue = 3000
+    )
     val (stopMusicOnTaskClear, onStopMusicOnTaskClearChange) = rememberPreference(
         StopMusicOnTaskClearKey,
         defaultValue = false
@@ -104,6 +115,29 @@ fun PlayerSettings(
         HistoryDuration,
         defaultValue = 30f
     )
+
+    var showCrossFadeDur by remember {Add commentMore actions
+        mutableStateOf(false)
+    }
+
+    if (showCrossFadeDur) {
+        CounterDialog(
+            title = stringResource(R.string.crossfade),
+            initialValue = crossfadeDuration,
+            upperBound = 12000,
+            lowerBound = 0,
+            resetValue = 3000,
+            onDismiss = { showCrossFadeDur = false },
+            onConfirm = {
+                showCrossFadeDur = false
+                onCrossfadeDurationChange(it)
+            },
+            onCancel = {
+                showCrossFadeDur = false
+            },
+            onReset = { onCrossfadeDurationChange(3000) },
+        )
+    }
 
     Column(
         Modifier
@@ -156,6 +190,23 @@ fun PlayerSettings(
             checked = audioNormalization,
             onCheckedChange = onAudioNormalizationChange
         )
+
+        SwitchPreference(Add commentMore actions
+            title = { Text(stringResource(R.string.crossfade)) },
+            description = stringResource(R.string.crossfade_desc),
+            icon = { Icon(painterResource(R.drawable.surround_sound), null) },
+            checked = crossfadeEnabled,
+            onCheckedChange = onCrossfadeEnabledChange
+        )
+
+        AnimatedVisibility(crossfadeEnabled) {
+            PreferenceEntry(
+                title = { Text(stringResource(R.string.crossfade)) },
+                description = "$crossfadeDuration",
+                icon = { Icon(painterResource(R.drawable.surround_sound), null) },
+                onClick = { showCrossFadeDur = true }
+            )
+        }
 
         PreferenceGroupTitle(
             title = stringResource(R.string.queue)
