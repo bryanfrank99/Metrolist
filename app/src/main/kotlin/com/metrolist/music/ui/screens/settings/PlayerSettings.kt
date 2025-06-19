@@ -53,7 +53,7 @@ import com.metrolist.music.constants.SimilarContent
 import com.metrolist.music.constants.SkipSilenceKey
 import com.metrolist.music.constants.StopMusicOnTaskClearKey
 import com.metrolist.music.constants.HistoryDuration
-import com.metrolist.music.ui.component.ActionPromptDialog
+import com.metrolist.music.ui.component.CounterDialog
 import com.metrolist.music.ui.component.EnumListPreference
 import com.metrolist.music.ui.component.IconButton
 import com.metrolist.music.ui.component.PreferenceEntry
@@ -87,49 +87,26 @@ fun PlayerSettings(
     var showCrossFadeDur by remember { mutableStateOf(false) }
     var crossfadeSliderValue by remember { mutableFloatStateOf(crossfadeDuration.toFloat()) }
 
+    var showCrossFadeDur by remember {Add commentMore actions
+        mutableStateOf(false)
+    }
+
     if (showCrossFadeDur) {
-        ActionPromptDialog(
-            titleBar = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = stringResource(R.string.crossfade),
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 1,
-                        style = MaterialTheme.typography.headlineSmall,
-                    )
-                }
-            },
+        CounterDialog(
+            title = stringResource(R.string.crossfade),
+            initialValue = crossfadeDuration,
+            upperBound = 12000,
+            lowerBound = 0,
+            resetValue = 3000,
             onDismiss = { showCrossFadeDur = false },
             onConfirm = {
                 showCrossFadeDur = false
-                onCrossfadeDurationChange(crossfadeSliderValue.roundToInt())
+                onCrossfadeDurationChange(it)
             },
-            onCancel = { showCrossFadeDur = false },
-            onReset = {
-                crossfadeSliderValue = 3000f
-                onCrossfadeDurationChange(3000)
+            onCancel = {
+                showCrossFadeDur = false
             },
-            content = {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = stringResource(R.string.crossfade_duration_ms, crossfadeSliderValue.roundToInt()),
-                        style = MaterialTheme.typography.bodyLarge,
-                    )
-
-                    Spacer(Modifier.height(16.dp))
-
-                    Slider(
-                        value = crossfadeSliderValue,
-                        onValueChange = { crossfadeSliderValue = it },
-                        valueRange = 0f..12000f,
-                        steps = 23,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
+            onReset = { onCrossfadeDurationChange(3000) },
         )
     }
 
