@@ -128,6 +128,8 @@
     <string name="min_playback_duration_description">The minimum amount of a song that must be played before it is considered \"played\"</string>
     <string name="percentage_format">%d%%</string>
     <string name="minimum_playback_duration">Minimum playback duration</string>
+    <string name="crossfade">Crossfade</string>
+    <string name="crossfade_desc">Smooth transition between songs</string>
 
     <string name="import_online">Import a \"m3u\" playlists</string>
     <string name="import_csv">Import a \"csv\" playlists</string>
