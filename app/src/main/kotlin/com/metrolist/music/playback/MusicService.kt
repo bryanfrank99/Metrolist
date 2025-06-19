@@ -732,8 +732,6 @@ class MusicService :
             delay(stepDuration)
         }
 
-        player.seekToNext()
-
         // Fade in next song
         player.volume = 0f
         for (i in 0..steps) {
