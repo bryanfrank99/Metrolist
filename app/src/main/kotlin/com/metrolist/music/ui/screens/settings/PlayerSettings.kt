@@ -69,75 +69,65 @@ fun PlayerSettings(
     navController: NavController,
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
-    val (audioQuality, onAudioQualityChange) = rememberEnumPreference(
-        AudioQualityKey,
-        defaultValue = AudioQuality.AUTO
-    )
-    val (persistentQueue, onPersistentQueueChange) = rememberPreference(
-        PersistentQueueKey,
-        defaultValue = true
-    )
-    val (skipSilence, onSkipSilenceChange) = rememberPreference(
-        SkipSilenceKey,
-        defaultValue = false
-    )
-    val (audioNormalization, onAudioNormalizationChange) = rememberPreference(
-        AudioNormalizationKey,
-        defaultValue = true
-    )
-    val (autoLoadMore, onAutoLoadMoreChange) = rememberPreference(
-        AutoLoadMoreKey,
-        defaultValue = true
-    )
-    val (autoDownloadOnLike, onAutoDownloadOnLikeChange) = rememberPreference(
-        AutoDownloadOnLikeKey,
-        defaultValue = false
-    )
-    val (similarContentEnabled, similarContentEnabledChange) = rememberPreference(
-        key = SimilarContent,
-        defaultValue = true
-    )
-    val (autoSkipNextOnError, onAutoSkipNextOnErrorChange) = rememberPreference(
-        AutoSkipNextOnErrorKey,
-        defaultValue = false
-    )
-    val (crossfadeEnabled,onCrossfadeEnabledChange) = rememberPreference(
-        CrossfadeEnabledKey,
-        defaultValue = true
-    )
-    val (crossfadeDuration,onCrossfadeDurationChange) = rememberPreference(
-        CrossfadeDurationKey,
-        defaultValue = 3000
-    )
-    val (stopMusicOnTaskClear, onStopMusicOnTaskClearChange) = rememberPreference(
-        StopMusicOnTaskClearKey,
-        defaultValue = false
-    )
-    val (historyDuration, onHistoryDurationChange) = rememberPreference(
-        HistoryDuration,
-        defaultValue = 30f
-    )
+    val (audioQuality, onAudioQualityChange) = rememberEnumPreference(AudioQualityKey, defaultValue = AudioQuality.AUTO)
+    val (persistentQueue, onPersistentQueueChange) = rememberPreference(PersistentQueueKey, defaultValue = true)
+    val (skipSilence, onSkipSilenceChange) = rememberPreference(SkipSilenceKey, defaultValue = false)
+    val (audioNormalization, onAudioNormalizationChange) = rememberPreference(AudioNormalizationKey, defaultValue = true)
+    val (autoLoadMore, onAutoLoadMoreChange) = rememberPreference(AutoLoadMoreKey, defaultValue = true)
+    val (autoDownloadOnLike, onAutoDownloadOnLikeChange) = rememberPreference(AutoDownloadOnLikeKey, defaultValue = false)
+    val (similarContentEnabled, similarContentEnabledChange) = rememberPreference(SimilarContent, defaultValue = true)
+    val (autoSkipNextOnError, onAutoSkipNextOnErrorChange) = rememberPreference(AutoSkipNextOnErrorKey, defaultValue = false)
+    val (crossfadeEnabled, onCrossfadeEnabledChange) = rememberPreference(CrossfadeEnabledKey, defaultValue = true)
+    val (crossfadeDuration, onCrossfadeDurationChange) = rememberPreference(CrossfadeDurationKey, defaultValue = 3000)
+    val (stopMusicOnTaskClear, onStopMusicOnTaskClearChange) = rememberPreference(StopMusicOnTaskClearKey, defaultValue = false)
+    val (historyDuration, onHistoryDurationChange) = rememberPreference(HistoryDuration, defaultValue = 30f)
 
-    var showCrossFadeDur by remember {
-        mutableStateOf(false)
-    }
+    var showCrossFadeDur by remember { mutableStateOf(false) }
+    var crossfadeSliderValue by remember { mutableFloatStateOf(crossfadeDuration.toFloat()) }
 
     if (showCrossFadeDur) {
         ActionPromptDialog(
-            title = stringResource(R.string.crossfade),
-            initialValue = crossfadeDuration,
-            upperBound = 12000,
-            lowerBound = 0,
-            resetValue = 3000,
+            titleBar = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.crossfade),
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1,
+                        style = MaterialTheme.typography.headlineSmall,
+                    )
+                }
+            },
             onDismiss = { showCrossFadeDur = false },
             onConfirm = {
                 showCrossFadeDur = false
-                onCrossfadeDurationChange(it)
+                onCrossfadeDurationChange(crossfadeSliderValue.roundToInt())
             },
-            onCancel = {
-                showCrossFadeDur = false
+            onCancel = { showCrossFadeDur = false },
+            onReset = {
+                crossfadeSliderValue = 3000f
+                onCrossfadeDurationChange(3000)
             },
-            onReset = { onCrossfadeDurationChange(3000) },
+            content = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = stringResource(R.string.crossfade_duration_ms, crossfadeSliderValue.roundToInt()),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
+                    Slider(
+                        value = crossfadeSliderValue,
+                        onValueChange = { crossfadeSliderValue = it },
+                        valueRange = 0f..12000f,
+                        steps = 23,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
         )
     }
 
@@ -146,17 +136,9 @@ fun PlayerSettings(
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .verticalScroll(rememberScrollState())
     ) {
-        Spacer(
-            Modifier.windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(
-                    WindowInsetsSides.Top
-                )
-            )
-        )
+        Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
 
-        PreferenceGroupTitle(
-            title = stringResource(R.string.player)
-        )
+        PreferenceGroupTitle(title = stringResource(R.string.player))
 
         EnumListPreference(
             title = { Text(stringResource(R.string.audio_quality)) },
