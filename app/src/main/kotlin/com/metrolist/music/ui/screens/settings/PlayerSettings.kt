@@ -191,7 +191,7 @@ fun PlayerSettings(
             onCheckedChange = onAudioNormalizationChange
         )
 
-        SwitchPreference(Add commentMore actions
+        SwitchPreference(
             title = { Text(stringResource(R.string.crossfade)) },
             description = stringResource(R.string.crossfade_desc),
             icon = { Icon(painterResource(R.drawable.surround_sound), null) },
